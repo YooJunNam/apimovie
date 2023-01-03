@@ -594,6 +594,8 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Component", ()=>Component);
 parcelHelpers.export(exports, "createRouter", ()=>createRouter);
+// store
+parcelHelpers.export(exports, "Store", ()=>Store);
 class Component {
     constructor(payload = {}){
         const { tagName ="div" , state ={} , props ={}  } = payload;
@@ -630,6 +632,24 @@ function createRouter(routes) {
         });
         routeRender(routes);
     };
+}
+class Store {
+    constructor(state){
+        this.state = {};
+        this.observers = {};
+        for(const key in state)Object.defineProperty(this.state, key, {
+            get: ()=>state[key],
+            set: (val)=>{
+                state[key] = val;
+                this.observers[key].forEach((observer)=>observer(val));
+            }
+        });
+    }
+    subscribe(key, cb) {
+        Array.isArray(this.observers[key]) ? this.observers[key].push(cb) : this.observers[key] = [
+            cb
+        ];
+    }
 }
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3Cyq4":[function(require,module,exports) {
@@ -674,16 +694,93 @@ exports.default = (0, _jun.createRouter)([
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _jun = require("../core/jun");
+var _textField = require("../components/TextField");
+var _textFieldDefault = parcelHelpers.interopDefault(_textField);
+var _message = require("../components/Message");
+var _messageDefault = parcelHelpers.interopDefault(_message);
+var _title = require("../components/Title");
+var _titleDefault = parcelHelpers.interopDefault(_title);
 class Home extends (0, _jun.Component) {
     render() {
         this.el.innerHTML = /* html */ `
         <h1>Home Page!</h1>
         `;
+        this.el.append(new (0, _textFieldDefault.default)().el, new (0, _messageDefault.default)().el, new (0, _titleDefault.default)().el);
     }
 }
 exports.default = Home;
 
-},{"../core/jun":"1dl2B","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gdB30":[function(require,module,exports) {
+},{"../core/jun":"1dl2B","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../components/TextField":"e6IWT","../components/Message":"i84kQ","../components/Title":"6wotK"}],"e6IWT":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _jun = require("../core/jun");
+var _message = require("../store/message");
+var _messageDefault = parcelHelpers.interopDefault(_message);
+class TextField extends (0, _jun.Component) {
+    render() {
+        this.el.innerHTML = /*html*/ `
+        <input value="${(0, _messageDefault.default).state.message}"/>
+        `;
+        const inputEl = this.el.querySelector("input");
+        inputEl.addEventListener("input", ()=>{
+            (0, _messageDefault.default).state.message = inputEl.value;
+        });
+    }
+}
+exports.default = TextField;
+
+},{"../core/jun":"1dl2B","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../store/message":"4gYOO"}],"4gYOO":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _jun = require("../core/jun");
+exports.default = new (0, _jun.Store)({
+    message: "Hello~"
+});
+
+},{"../core/jun":"1dl2B","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"i84kQ":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _jun = require("../core/jun");
+var _message = require("../store/message");
+var _messageDefault = parcelHelpers.interopDefault(_message);
+class Message extends (0, _jun.Component) {
+    constructor(){
+        super();
+        (0, _messageDefault.default).subscribe("message", ()=>{
+            this.render();
+        });
+    }
+    render() {
+        this.el.innerHTML = /*html*/ `
+        <h2>${(0, _messageDefault.default).state.message}</h2>
+        `;
+    }
+}
+exports.default = Message;
+
+},{"../core/jun":"1dl2B","../store/message":"4gYOO","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6wotK":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _jun = require("../core/jun");
+var _message = require("../store/message");
+var _messageDefault = parcelHelpers.interopDefault(_message);
+class Title extends (0, _jun.Component) {
+    constructor(){
+        super({
+            tagName: "h1"
+        });
+        (0, _messageDefault.default).subscribe("message", (newVal)=>{
+            console.log(newVal);
+            this.render();
+        });
+    }
+    render() {
+        this.el.textContent = `Title : ${(0, _messageDefault.default).state.message}`;
+    }
+}
+exports.default = Title;
+
+},{"../core/jun":"1dl2B","../store/message":"4gYOO","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gdB30":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _jun = require("../core/jun");
